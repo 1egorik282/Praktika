@@ -1,0 +1,1 @@
+DB_NAME = "travel_agency.db"
