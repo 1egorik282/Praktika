@@ -4,6 +4,7 @@ from Models.sale import Sale
 from Models.tour import Tour
 from Models.country import Country
 from Models.hotel import Hotel
+from Models.tour_transport import TourTransport
 
 def show_main_menu():
     while True:
@@ -21,6 +22,8 @@ def show_main_menu():
             tour_menu()
         elif choice == "3":
             sale_menu()
+        elif choice == "4":
+            transport_menu()
         elif choice == "0":
             break
         else:
@@ -61,6 +64,8 @@ def tour_menu():
         print("2. 🏨 Добавить отель")
         print("3. ✈️ Добавить тур")
         print("4. 🗺️ Просмотреть все туры")
+        print("5. ➕ Добавить транспорт к туру")
+        print("6. 🚗 Просмотреть транспорт для тура")
         print("0. ◀️ Назад")
         
         choice = input("Выберите действие: ")
@@ -105,11 +110,87 @@ def tour_menu():
             
         elif choice == "4":
             tours = Tour.get_all()
+            print("\nСписок туров:")
             for t in tours:
                 hotel = Hotel.get_by_id(t.hotel_id)
                 country = Country.get_by_id(hotel.country_id)
-                print(f"{t.id}. {country.name} - {hotel.name} ({t.duration} дней, {t.base_price} руб.)")
-                
+                transports = TourTransport.get_by_tour(t.id)
+                transports_info = ", ".join([f"{tr.transport_type} ({tr.cost} руб.)" for tr in transports]) if transports else "Не указано"
+                print(f"{t.id}. {country.name} - {hotel.name} ({t.duration} дней, {t.base_price} руб.) | Транспорт: {transports_info}")
+        
+        elif choice == "5":  # Добавление транспорта к туру
+            tours = Tour.get_all()
+            print("\nСписок туров:")
+            for t in tours:
+                hotel = Hotel.get_by_id(t.hotel_id)
+                country = Country.get_by_id(hotel.country_id)
+                print(f"{t.id}. {country.name} - {hotel.name} ({t.duration} дней)")
+            tour_id = int(input("Введите ID тура: "))
+            transport_type = input("Тип транспорта (самолет/поезд/автобус): ")
+            cost = float(input("Стоимость транспорта: "))
+            transport = TourTransport(tour_id=tour_id, transport_type=transport_type, cost=cost)
+            transport.save()
+            print("✅ Транспорт добавлен!")
+        
+        elif choice == "6":  # Просмотр транспорта для тура
+            tour_id = int(input("Введите ID тура: "))
+            transports = TourTransport.get_by_tour(tour_id)
+            if transports:
+                print(f"\nТранспорт для тура {tour_id}:")
+                for tr in transports:
+                    print(f"- {tr.transport_type} ({tr.cost} руб.)")
+            else:
+                print("⚠️ Для этого тура транспорт не указан.")
+                        
+        elif choice == "0":
+            break
+
+def transport_menu():
+    while True:
+        print("\n🚗 === Транспорт для туров ===")
+        print("1. ➕ Добавить транспорт")
+        print("2. 📋 Просмотреть транспорт для всех туров")
+        print("3. 🔍 Просмотреть транспорт для конкретного тура")
+        print("0. ◀️ Назад")
+        choice = input("Выберите действие: ")
+        
+        if choice == "1":  # Добавление транспорта
+            # Вывод списка туров
+            tours = Tour.get_all()
+            for t in tours:
+                hotel = Hotel.get_by_id(t.hotel_id)
+                country = Country.get_by_id(hotel.country_id)
+                print(f"{t.id}. {country.name} - {hotel.name} ({t.duration} дней)")
+            tour_id = int(input("Введите ID тура: "))
+            
+            # Ввод данных о транспорте
+            transport_type = input("Тип транспорта (самолет/поезд/автобус): ")
+            cost = float(input("Стоимость транспорта: "))
+            
+            # Сохранение в БД
+            transport = TourTransport(tour_id=tour_id, transport_type=transport_type, cost=cost)
+            transport.save()
+            print("✅ Транспорт добавлен!")
+        
+        elif choice == "2":  # Просмотр всех транспортных опций
+            transports = TourTransport.get_all()
+            print("\nСписок транспортных опций:")
+            for tr in transports:
+                tour = Tour.get_by_id(tr.tour_id)
+                hotel = Hotel.get_by_id(tour.hotel_id)
+                country = Country.get_by_id(hotel.country_id)
+                print(f"Тур: {country.name} - {hotel.name} | {tr.transport_type} ({tr.cost} руб.)")
+        
+        elif choice == "3":  # Просмотр транспорта по ID тура
+            tour_id = int(input("Введите ID тура: "))
+            transports = TourTransport.get_by_tour(tour_id)
+            if transports:
+                print(f"\nТранспорт для тура {tour_id}:")
+                for tr in transports:
+                    print(f"- {tr.transport_type} ({tr.cost} руб.)")
+            else:
+                print("⚠️ Для этого тура транспорт не указан.")
+        
         elif choice == "0":
             break
 
