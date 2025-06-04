@@ -3,6 +3,7 @@ from Models.client import Client
 from Models.country import Country
 from Models.hotel import Hotel
 from Models.tour import Tour
+from Models.tour_transport import TourTransport
 from datetime import date
 
 class Sale:
@@ -23,6 +24,7 @@ class Sale:
         # Рассчитываем цену с учетом скидок
         tour = Tour.get_by_id(self.tour_id)
         country = Country.get_by_id(Hotel.get_by_id(tour.hotel_id).country_id)
+        transports = TourTransport.get_by_tour(tour.id)
         
         # Базовая цена
         base_price = tour.base_price
@@ -32,9 +34,10 @@ class Sale:
         
         # Применяем скидки (суммируются)
         total_discount = self.discount
+        transport_cost = sum(tr.cost for tr in transports) if transports else 0
         
         # Итоговая цена
-        self.total_price = (base_price + visa_cost) * (1 - total_discount/100)
+        self.total_price = (base_price + visa_cost + transport_cost) * (1 - total_discount/100)
 
         if self.id is None:
             cursor.execute("""
