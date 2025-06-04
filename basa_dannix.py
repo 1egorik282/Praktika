@@ -67,6 +67,17 @@ def initialize_db():
         FOREIGN KEY (tour_id) REFERENCES tours(id)
     )
     ''')
+
+    # Тур транспорт
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS tour_transports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tour_id INTEGER,
+        transport_type TEXT,
+        cost REAL,
+        FOREIGN KEY (tour_id) REFERENCES tours(id)
+    )
+    ''')
     
     conn.commit()
     conn.close()
